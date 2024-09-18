@@ -1,57 +1,69 @@
+#import required modules 
 import os
-
 import csv
-# Path to collect data from the Resources folder
-csvpath = os.path.join('Resources', 'election_data.csv')
-output = '''Election Results
--------------------------
-Total Votes: '''
-'''369711
- -------------------------
-  Charles Casper Stockham: 23.049% (85213)
-  Diana DeGette: 73.812% (272892)
-  Raymon Anthony Doane: 3.139% (11606)
- -------------------------
-  Winner: Diana DeGette
-  -------------------------
-  '''
- 
-with open(csvpath, encoding= 'utf') as csvfile:
-     #Initialising reader to read csvfile                   
-    csvreader = csv.reader(csvfile, delimiter = ',')
-    
-    #Skipping the first row (header)
+
+#path to find election_data CSV file in nested Resources folder
+election_data_csv = os.path.join('Resources','election_data.csv')
+
+#define variables 
+total_votes = 0
+candidates={}
+winner=""
+winning_votes=0
+
+#load and read the election_data CSV file
+with open(election_data_csv) as file:
+    csvreader=csv.reader(file,delimiter=",")
+
+    #skip the header row
     next(csvreader)
-    
-    total_votes = []
-    candidates_votes = ()
 
-# The total number of votes 
+    #evaluate each row in the CSV file
+    for row in csvreader:
+        total_votes+=1
 
-    for line in csvreader:
-        total_votes.append(line[2])
-total_count = len(total_votes)
-output = output + str(total_count) + "\n" + "-------------------------" + "\n"
-candidates = list(set(total_votes))
-votes_per_candidate = []
-percentage = []
+        #count the votes per candidate
+        if row[2] in candidates:
+             candidates[row[2]] += 1
+        else:
+             candidates[row[2]] = 1
 
-# Votes per candidate
-# List of candidates
-for candidate in candidates:
-    votes_per_candidate.append(total_votes.count(candidate))
+    #calculate percentage of votes per candidate
+    results={}
 
-# Percentage of votes each candidate got
-for i in range (len(candidates)):
-    percentage = votes_per_candidate[i]/total_count*100
-    output = output + f'{candidates[i]}: {round(percentage,3)}% ({votes_per_candidate[i]}) \n'
-# The winner of the vote
-index_of_winner = votes_per_candidate.index(max(votes_per_candidate))
-output = output + f"-------------------------\nWinner: {candidates[index_of_winner]}\n-------------------------"   
+    for candidate, votes in candidates.items():
+        percent=votes/total_votes
+        results[candidate]=(percent, votes)
 
+        #identify the winner
+        if votes>winning_votes:
+            winning_votes=votes
+            winner=candidate
 
-# Export result to text file and print on terminal
-print(output)
-csvpath = os.path.join('Analysis', 'Polling_Analysis.txt')
-with open(csvpath,'w') as textfile:
-    textfile.write(output)
+#print resuls of analysis        
+print("Election Results")    
+print("----------------")
+print(f"Total Votes:{total_votes}")
+print("----------------")
+
+for candidate, (percentage,votes) in results.items():
+    #print results of analysis
+    print(f"{candidate}: {percentage:.3%} ({votes})")
+
+#print results of analysis
+print("----------------")
+print(f"Winner: {winner}")
+   
+#export the results to a text display file
+output_file = "Analysis/ElectionAnalysis.txt"
+with open(output_file, "w") as f:
+    f.write(f"Election Results\n")
+    f.write(f"----------------------------\n")
+    f.write(f"Total Votes: {total_votes}\n")
+    f.write(f"----------------------------\n")
+    for candidate, (percentage, votes) in results.items():
+        f.write(f"{candidate}: {percentage:.3f}% ({votes})\n")
+    f.write(f"----------------------------\n")
+    f.write(f"Winner: {winner}\n")
+    f.write(f"----------------------------\n")
+    print(os.getcwd())
